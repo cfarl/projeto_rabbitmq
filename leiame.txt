@@ -1,0 +1,77 @@
+
+-- --------------------------------------------------------------
+-- Para rodar a aplicação:
+-- --------------------------------------------------------------
+
+1) Suba o container docker com o RabbitMQ rodando o seguinte comando:
+
+docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.11-management
+
+2) Abra o RabbitMQ no seguinte endereço (use usuario e senha guest):
+
+http://localhost:15672/#/
+
+3) Enviar uma mensagem POST para 'localhost:8080/enviarMensagemJson' com o seguinte formato:
+
+{
+	"id": 10 ,
+	"descricao": "Pagamento de Algo",
+	"valor": 26.50
+}
+
+4) Se não quiser que a mensagem seja recebida automaticamente pela aplicação, comente o @Component da classe ListerFilaRabbitMQ
+
+-- --------------------------------------------------------------
+- Para enviar uma mensagem de texto:
+-- --------------------------------------------------------------
+
+1) Habilite o SimpleMessageConverter na classe de configuracao
+
+2) Desabilite o Jackson2JsonMessageConverter na classe de configuracao
+
+3) Envie uma chamada GET para o endereço:
+
+http://localhost:8080/enviarMensagem
+
+-- -----------------------------------------------------
+-- Criando um cluster de RabbitMQ
+-- -----------------------------------------------------
+
+1) Crie uma rede Docker
+
+docker network create alura
+
+2) Subimos três instâncias do RabbitMQ através de containers Docker, mapeando-as em diferentes portas locais.
+Passamos uma variável de ambiente para setar todos com o mesmo Erlang Cookie necessário para a comunicação e espelhamento das mensagens:
+
+docker run -d --rm --net alura --hostname rabbit1 --name rabbit1 -p 8085:15672 -e RABBITMQ_ERLANG_COOKIE=alura_secret rabbitmq:3.10-management
+
+docker run -d --rm --net alura --hostname rabbit2 --name rabbit2 -p 8086:15672 -e RABBITMQ_ERLANG_COOKIE=alura_secret rabbitmq:3.10-management
+
+docker run -d --rm --net alura --hostname rabbit3 --name rabbit3 -p 8087:15672 -e RABBITMQ_ERLANG_COOKIE=alura_secret rabbitmq:3.10-management
+
+3) Abrir o RabbitMQ no endereço:
+
+http://localhost:8085/#/
+
+4) Para o segundo e o terceiro container, rabbit2 e rabbit3, parar, reiniciar as configurações e pedir para que se juntem ao cluster do rabbit1:
+
+docker exec -it rabbit2 rabbitmqctl stop_app
+docker exec -it rabbit2 rabbitmqctl reset
+docker exec -it rabbit2 rabbitmqctl join_cluster rabbit@rabbit1
+docker exec -it rabbit2 rabbitmqctl start_app
+
+docker exec -it rabbit3 rabbitmqctl stop_app
+docker exec -it rabbit3 rabbitmqctl reset
+docker exec -it rabbit3 rabbitmqctl join_cluster rabbit@rabbit1
+docker exec -it rabbit3 rabbitmqctl start_app
+
+5) Verificar os 3 nós em cluster no http://localhost:8085/#/
+
+6) Entar na aba "Admin", depois "Policies", adicionar uma nova política para Alta Disponibilidade (a mensagem de uma fila que cair vai para outra):
+
+- name: ha
+- pattern: .*
+- Aplly to: Exchanges and queues (all)
+- Priority: em branco
+- Definition: ha-mode = all
