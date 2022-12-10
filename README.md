@@ -1,5 +1,5 @@
 -- --------------------------------------------------------------
--- Para rodar a aplicação:
+Para rodar a aplicação:
 -- --------------------------------------------------------------
 
 1) Suba o container docker com o RabbitMQ rodando o seguinte comando:
@@ -21,7 +21,7 @@ http://localhost:15672/#/
 4) Se não quiser que a mensagem seja recebida automaticamente pela aplicação, comente o @Component da classe ListerFilaRabbitMQ
 
 -- --------------------------------------------------------------
-- Para enviar uma mensagem de texto:
+Para enviar uma mensagem de texto:
 -- --------------------------------------------------------------
 
 1) Habilite o SimpleMessageConverter na classe de configuracao
@@ -33,7 +33,7 @@ http://localhost:15672/#/
 http://localhost:8080/enviarMensagem
 
 -- -----------------------------------------------------
--- Criando um cluster de RabbitMQ
+Criando um cluster de RabbitMQ:
 -- -----------------------------------------------------
 
 1) Crie uma rede Docker
@@ -74,9 +74,4 @@ docker exec -it rabbit3 rabbitmqctl start_app
 - Aplly to: Exchanges and queues (all)
 - Priority: em branco
 - Definition: ha-mode = all
-Footer
-© 2022 GitHub, Inc.
-Footer navigation
-Terms
-Privacy
-Se
+
